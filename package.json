@@ -1,0 +1,13 @@
+{
+  "name": "@civ-clone/base-route-link",
+  "version": "0.0.0",
+  "description": "Whether two squares are joined by an unbroken chain of road or railroad squares, and a city's link to its capital, cached per player.",
+  "repository": "git@github.com:civ-clone/base-route-link.git",
+  "keywords": [
+    "typescript",
+    "civilization"
+  ],
+  "author": "dom111 <dom111@users.noreply.github.com>",
+  "license": "MIT",
+  "private": false
+}
