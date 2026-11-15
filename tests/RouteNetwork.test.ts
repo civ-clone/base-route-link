@@ -13,6 +13,7 @@ import Effect from '@civ-clone/core-rule/Effect';
 import Generator from '@civ-clone/core-world-generator/Generator';
 import Pillaged from '@civ-clone/core-tile-improvement/Rules/Pillaged';
 import Player from '@civ-clone/core-player/Player';
+import Removed from '@civ-clone/core-tile-improvement/Rules/Removed';
 import RuleRegistry from '@civ-clone/core-rule/RuleRegistry';
 import Terrain from '@civ-clone/core-terrain/Terrain';
 import Tile from '@civ-clone/core-world/Tile';
@@ -231,6 +232,30 @@ describe('RouteNetwork', (): void => {
     ruleRegistry.process(Pillaged, at(4, 0), road);
 
     expect(network.link(player, at(1, 0), at(5, 0))).to.equal(NONE);
+  });
+
+  it('should see a road removed, and a city founded or destroyed', (): void => {
+    const { at, cityRegistry, network, ruleRegistry, tileImprovementRegistry } =
+      setUp(['.crr.rrc.', '.........']);
+
+    expect(network.link(player, at(1, 0), at(7, 0))).to.equal(NONE);
+
+    const city = new City(player, at(4, 0), 'City', ruleRegistry);
+
+    cityRegistry.register(city);
+    expect(network.link(player, at(1, 0), at(7, 0))).to.equal(ROAD);
+
+    cityRegistry.unregister(city);
+    city.destroy();
+    expect(network.link(player, at(1, 0), at(7, 0))).to.equal(NONE);
+
+    expect(network.link(player, at(1, 0), at(3, 0))).to.equal(ROAD);
+
+    const [road] = tileImprovementRegistry.getByTile(at(3, 0));
+
+    tileImprovementRegistry.unregister(road);
+    ruleRegistry.process(Removed, at(3, 0), road);
+    expect(network.link(player, at(1, 0), at(3, 0))).to.equal(NONE);
   });
 
   it('should ignore other tile improvements built', (): void => {

@@ -67,9 +67,16 @@ all the time, so a unit test would make the labels useless.
 Nothing is kept on a game entity, so nothing is saved, and a loaded game starts with no labels.
 
 `npm run bench` times every city's capital link three ways: a flood fill for each city, cold (just invalidated), and
-warm. `ROUTE_FIXTURE=<file.json>` runs it on a real map (see `bench/routeNetwork.ts` for the shape). On a 120 × 90 map
-from a 287-turn game (1,431 road and 419 railroad squares, 199 cities of 9 players): 13.9 ms a pass with a flood fill
-each, 1.05 ms cold, 0.042 ms warm.
+warm. `ROUTE_FIXTURE=<file.json>` runs it on a real map (see `bench/routeNetwork.ts` for the shape). Every city's link,
+per pass:
+
+| Map | Squares (road, railroad) | Cities (players) | Flood each | Cold | Warm |
+|---|---|---|---|---|---|
+| 104 × 65, a 368-turn game | 667, 284 | 91 (6) | 4.8 ms | 0.47 ms | 0.016 ms |
+| 120 × 90, a 287-turn game | 1,431, 419 | 199 (9) | 13.9 ms | 1.05 ms | 0.042 ms |
+| 120 × 90, synthetic: a road every 4 squares | 3,610, 860 | 200 (8) | 518 ms | 20.5 ms | 0.045 ms |
+
+The two games are Civ1 saves on a square grid; the synthetic map is an upper bound.
 
 ## What Civilization II does
 
@@ -84,6 +91,11 @@ answers 2 when every square it stepped on had a railroad, 1 when it reached the 
 - two cities side by side get 2, as no square between them is checked;
 - the capital itself gets 1, or 2 once its owner has the Railroad advance (the advance, not the squares);
 - two cities with airports get 1, but only across land masses: on the same land mass the road answer replaces it.
+
+Civilization II uses the link for shield waste only (`city_calc_shields_pollution`); trade corruption ignores it.
+Waste is the corruption formula on shields less support (distance capped at 16), times (3 − link) / 3, divided by
+`(government >> 1) + 1`, at most shields − support − 1 and at least 0. The link is worked out again with each city's
+full recalculation (`city_recalc`).
 
 `RouteNetwork` answers the general question instead: a winding road counts here, and doesn't in the original. A rule
 set that needs the original's exact walk can still use `grade` square by square.
